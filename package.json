@@ -1,0 +1,15 @@
+{
+  "name": "sitemapper",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "sax": "^1.2.4",
+    "hittp": "^0.1.1"
+  }
+}
