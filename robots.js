@@ -1,9 +1,6 @@
 'use strict'
 const hittp = require("hittp")
-const stream = require("stream")
 const events = require("events")
-
-const emitter = new events.EventEmitter()
 
 const getSitemaps = async (url) => {
   if (typeof(url) === "string") {
