@@ -1,5 +1,5 @@
 {
-  "name": "sitemapper",
+  "name": "getsitemap",
   "version": "0.1.0",
   "description": "Node.js module that recursively crawls a website's sitemap and returns a stream of URLs",
   "keywords": [
@@ -8,9 +8,9 @@
     "scrape",
     "robots"
   ],
-  "homepage": "https://github.com/sunnypurewal/sitemapper",
+  "homepage": "https://github.com/sunnypurewal/getsitemap",
   "bugs": {
-    "url": "https://github.com/sunnypurewal/sitemapper/issues",
+    "url": "https://github.com/sunnypurewal/getsitemap/issues",
     "email": "sunnypurewal@gmail.com"
   },
   "main": "index.js",
@@ -21,7 +21,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "github:sunnypurewal/sitemapper.git"
+    "url": "github:sunnypurewal/getsitemap.git"
   },
   "dependencies": {
     "sax": "^1.2.4",
