@@ -7,11 +7,32 @@ const stream = require("stream")
 const robots = require("./robots")
 
 const map = async (url) => {
-  const sitemapurls = await robots.getSitemaps(url)
-  console.log(sitemapurls)
+  return new Promise((resolve, reject) => {
+    robots.getSitemaps(url).then((sitemapurls) => {
+      if (sitemapurls.length === 0) {
+        if (typeof(url) === "string") {
+          if (url.indexOf("/sitemap.xml") === -1) sitemapurls.push(`${url}/sitemap.xml`)
+        } else if (url.pathname) {
+          if (url.pathname.indexOf("sitemap.xml") === -1) {
+            const sitemapurl = url
+            sitemapurl.pathname = "sitemap.xml"
+            sitemapurls.push(sitemapurl)
+          }
+        }
+      }
+      const outstream = stream.PassThrough({autoDestroy: true})
+      resolve(outstream)
+      for (const sitemapurl of sitemapurls) {
+        get(sitemapurl).then((sitemapstream) =>  {
+          sitemapstream.pipe(outstream)
+        })
+      }
+    })
+  })
 }
 
 const get = async (url) => {
+  if (typeof(url) === "string") url = http.str2url(url)
   if (url.pathname.endsWith(".gz")) {
     url.pathname = url.pathname.slice(0, -3)
   }
@@ -24,10 +45,9 @@ const get = async (url) => {
   }
 }
 
-const _getRecursive = async (url, outstream=null, streamcount=1) => {
+const _getRecursive = async (url, outstream=null) => {
   return new Promise((resolve, reject) => {
     let isSitemapIndex = false
-    // console.log(streamcount, url.href)
     _get(url).then((urlstream) => {
       if (!urlstream) return
       if (!outstream) {
@@ -42,17 +62,11 @@ const _getRecursive = async (url, outstream=null, streamcount=1) => {
           const chunkobj = JSON.parse(chunkstring)
           //TODO: check chunkobj.lastmod
           const locurl = http.str2url(chunkobj.loc)
-          _getRecursive(locurl, outstream, streamcount)
+          _getRecursive(locurl, outstream)
           //chunk is a sitemap
         } else {
           outstream.write(chunk)
           //chunk is a URL
-        }
-      })
-      urlstream.on("close", () => {
-        streamcount -= 1
-        if (streamcount === 0) {
-          outstream.destroy()
         }
       })
     }).catch((err) => {
