@@ -138,6 +138,11 @@ const _get = async (url) => {
   })
 }
 
+const configure = (options) => {
+  http.configure(options)
+}
+
 module.exports = {
-  map
+  map,
+  configure
 }
