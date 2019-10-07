@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "hittp": "^0.2.4",
+    "query-string": "^6.8.3",
     "sax": "^1.2.4"
   }
 }

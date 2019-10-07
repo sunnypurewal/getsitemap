@@ -5,6 +5,7 @@ const sax = require("sax"),
   strict = true
 const stream = require("stream")
 const robots = require("./robots")
+const queryString = require('query-string');
 
 const map = async (url, since) => {
   return new Promise((resolve, reject) => {
@@ -60,15 +61,59 @@ const _getRecursive = async (url, since, outstream=null) => {
           isSitemapIndex = true
         } else if (isSitemapIndex) {
           const chunkobj = JSON.parse(chunkstring)
+          const locurl = http.str2url(chunkobj.loc)
           if (chunkobj.lastmod) {
             const lastmod = Date.parse(chunkobj.lastmod.toString())
-            if (lastmod > since) {
-            const locurl = http.str2url(chunkobj.loc)
-            _getRecursive(locurl, since, outstream).catch((err) => {
-              // Failed to fetch a node from sitemapindex
-              // Nothing we can do here. Just skip it.
-            })
+            if (lastmod !== NaN && lastmod > since) {
+              _getRecursive(locurl, since, outstream).catch((err) => {
+                // Failed to fetch a node from sitemapindex
+                // Nothing we can do here. Just skip it.
+              })
             }
+          } else if (locurl.search.length > 0) {
+            //try to parse date from query string
+            const args = queryString.parse(locurl.search)
+            let yyyy = null, mm = null, dd = null
+            for (const key in args) {
+              const lowerkey = key.toLowerCase()
+              if (lowerkey === "yyyy" || lowerkey === "yy") {
+                yyyy = args[key]
+              } else if (lowerkey === "mm" || lowerkey === "m") {
+                mm = args[key]
+              } else if (lowerkey === "dd" || lowerkey === "d") {
+                dd = args[key]
+              }
+            }
+            if (yyyy) {
+              let dateString = yyyy
+              if (mm) dateString += `-${mm}`
+              else datestring += "-12" 
+              if (dd) dateString += `-${dd}`
+              else dateString += "-31"
+              const lastmod = Date.parse(dateString)
+              if (lastmod !== NaN && lastmod > since) {
+                _getRecursive(locurl, since, outstream).catch((err) => {
+                  // Failed to fetch a sitemap from sitemapindex
+                  // Nothing we can do here. Just skip it.
+                })
+              }
+            }
+          } else {
+            const pathname = locurl.pathname
+            let yyyy = null, mm = null, dd = null
+            const yyyyIndex = pathname.search(/20\d{2}/g)
+            if (yyyyIndex != -1) {
+              yyyy = parseInt(pathname.slice(yyyyIndex, yyyyIndex+4))
+            }
+            if (yyyy) {
+              let dateString = yyyy
+              const ddmmyyyyindex = pathname.search(/[0-9]?[0-9][-_]?[0-9]?[0-9][-_]?20\d{2}}/g)
+              if (ddmmyyyyindex != -1) {
+                //parse date woooo
+              }
+            }
+            console.log(pathname, "Found a year at index", yyyyIndex)
+            // console.log("No date information about sitemap", filename, url.origin)
           }
           //chunk is a sitemap
         } else {
