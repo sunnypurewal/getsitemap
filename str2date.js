@@ -16,26 +16,26 @@ const parse = (pathname) => {
     // console.log("DDMMYYYY")
     index -= 1
     let char = pathname[index]
-    if (char.search(/\d/g) === -1) {
+    if (char && char.search(/\d/g) === -1) {
       index -= 1
       char = pathname[index]
       // console.log(char)
     }
     mm = ""
     dd = ""
-    while (char.search(/\d/g) !== -1 && index < pathname.length && mm.length <= 2) {
+    while (char && char.search(/\d/g) !== -1 && index < pathname.length && mm.length <= 2) {
       mm += char
       index -= 1
       char = pathname[index]
       // console.log(char)
     }
     mm = mm.split("").reverse().join("")
-    if (char.search(/\d/g) === -1) {
+    if (char && char.search(/\d/g) === -1) {
       index -= 1
       char = pathname[index]
       // console.log(char)
     }
-    while (char.search(/\d/g) !== -1 && index < pathname.length && dd.length <= 2) {
+    while (char && char.search(/\d/g) !== -1 && index < pathname.length && dd.length <= 2) {
       dd += char
       index -= 1
       char = pathname[index]
@@ -62,25 +62,25 @@ const parse = (pathname) => {
     index += 4
     let char = pathname[index]
     // console.log(char)
-    if (char.search(/\d/g) === -1) {
+    if (char && char.search(/\d/g) === -1) {
       index += 1
       char = pathname[index]
       // console.log(char)
     }
     mm = ""
     dd = ""
-    while (char.search(/\d/g) !== -1 && index < pathname.length && mm.length <= 2) {
+    while (char && char.search(/\d/g) !== -1 && index < pathname.length && mm.length <= 2) {
       mm += char
       index += 1
       char = pathname[index]
       // console.log(char)
     }
-    if (char.search(/\d/g) === -1) {
+    if (char && char.search(/\d/g) === -1) {
       index += 1
       char = pathname[index]
       // console.log(char)
     }
-    while (char.search(/\d/g) !== -1 && index < pathname.length && dd.length <= 2) {
+    while (char && char.search(/\d/g) !== -1 && index < pathname.length && dd.length <= 2) {
       dd += char
       index += 1
       char = pathname[index]

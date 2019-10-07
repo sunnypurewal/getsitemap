@@ -119,7 +119,11 @@ const _getRecursive = async (url, since, outstream=null) => {
           }
         }
         else {
-          outstream.write(chunk)
+          const chunkobj = JSON.parse(chunkstring)
+          const lastmod = Date.parse(chunkobj.lastmod)
+          if (lastmod && lastmod !== NaN && lastmod > since) {
+            outstream.write(chunk)
+          }
           //chunk is a URL
         }
       })
