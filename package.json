@@ -24,7 +24,7 @@
     "url": "github:sunnypurewal/getsitemap.git"
   },
   "dependencies": {
-    "hittp": "^0.2.3",
+    "hittp": "^0.2.4",
     "sax": "^1.2.4"
   }
 }

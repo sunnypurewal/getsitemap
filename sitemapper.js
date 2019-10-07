@@ -6,7 +6,7 @@ const sax = require("sax"),
 const stream = require("stream")
 const robots = require("./robots")
 
-const map = async (url) => {
+const map = async (url, since) => {
   return new Promise((resolve, reject) => {
     robots.getSitemaps(url).then((sitemapurls) => {
       if (sitemapurls.length === 0) {
@@ -23,29 +23,29 @@ const map = async (url) => {
       const outstream = stream.PassThrough({autoDestroy: true})
       resolve(outstream)
       for (const sitemapurl of sitemapurls) {
-        get(sitemapurl).then((sitemapstream) =>  {
-          sitemapstream.pipe(outstream)
+        get(sitemapurl, since).then((sitemapstream) =>  {
+          if (sitemapstream) sitemapstream.pipe(outstream)
         })
       }
+    }).catch((err) => {
+      reject(err)
     })
   })
 }
 
-const get = async (url) => {
+const get = async (url, since) => {
   if (typeof(url) === "string") url = http.str2url(url)
   if (url.pathname.endsWith(".gz")) {
     url.pathname = url.pathname.slice(0, -3)
   }
-  try {
-    const sitemapstream = await _getRecursive(url)
+  _getRecursive(url, since).then((sitemapstream) => {
     return sitemapstream
-  } catch (err) {
-    console.error("sitemapper.get", err.message)
+  }).catch((err) => {
     return null
-  }
+  })
 }
 
-const _getRecursive = async (url, outstream=null) => {
+const _getRecursive = async (url, since, outstream=null) => {
   return new Promise((resolve, reject) => {
     let isSitemapIndex = false
     _get(url).then((urlstream) => {
@@ -60,9 +60,16 @@ const _getRecursive = async (url, outstream=null) => {
           isSitemapIndex = true
         } else if (isSitemapIndex) {
           const chunkobj = JSON.parse(chunkstring)
-          //TODO: check chunkobj.lastmod
-          const locurl = http.str2url(chunkobj.loc)
-          _getRecursive(locurl, outstream)
+          if (chunkobj.lastmod) {
+            const lastmod = Date.parse(chunkobj.lastmod.toString())
+            if (lastmod > since) {
+            const locurl = http.str2url(chunkobj.loc)
+            _getRecursive(locurl, since, outstream).catch((err) => {
+              // Failed to fetch a node from sitemapindex
+              // Nothing we can do here. Just skip it.
+            })
+            }
+          }
           //chunk is a sitemap
         } else {
           outstream.write(chunk)
@@ -70,7 +77,6 @@ const _getRecursive = async (url, outstream=null) => {
         }
       })
     }).catch((err) => {
-      console.error("RECURSIVE ERROR", err.message)
       reject(err)
     })
   })
@@ -133,7 +139,7 @@ const _get = async (url) => {
         passthrough.end()
       })
     }).catch((err) => {
-      console.error("HTTP STREAM ERROR", err.message)
+      reject(err)
     })
   })
 }
