@@ -31,7 +31,7 @@ class SiteMapper {
         const outstream = stream.PassThrough({autoDestroy: true})
         resolve(outstream)
         for (const sitemapurl of sitemapurls) {
-          this.get(sitemapurl, since).then((sitemapstream) =>  {
+          this.get(sitemapurl, since, false).then((sitemapstream) =>  {
             if (sitemapstream) {
               sitemapstream.on("end", () => {
                 outstream.end()
@@ -46,13 +46,13 @@ class SiteMapper {
     })
   }
 
-  get = async (url, since) => {
+  get = async (url, since, useCache=true) => {
     return new Promise((resolve, reject) => {
       if (typeof(url) === "string") url = http.str2url(url)
       if (url.pathname.endsWith(".gz")) {
         url.pathname = url.pathname.slice(0, -3)
       }
-      this._getRecursive(url, since).then((sitemapstream) => {
+      this._getRecursive(url, since, useCache).then((sitemapstream) => {
         resolve(sitemapstream)
       }).catch((err) => {
         resolve(null)
@@ -60,7 +60,7 @@ class SiteMapper {
     })
   }
 
-  _getRecursive = async (url, since, outstream=null) => {
+  _getRecursive = async (url, since, useCache, outstream=null) => {
     this.outcount += 1
     return new Promise((resolve, reject) => {
       let isSitemapIndex = false
@@ -110,7 +110,7 @@ class SiteMapper {
 
                 if (lastmod && lastmod != NaN) {
                   if (lastmod > since) {
-                    this._getRecursive(locurl, since, outstream).catch((err) => {
+                    this._getRecursive(locurl, since, useCache, outstream).catch((err) => {
                     })
                   }
                   return
@@ -122,7 +122,7 @@ class SiteMapper {
               if (lastmod && lastmod != NaN) {
                 if (lastmod > since) {
                   // console.log(locurl.pathname)
-                  this._getRecursive(locurl, since, outstream).catch((err) => {
+                  this._getRecursive(locurl, since, useCache, outstream).catch((err) => {
                   })
                 }
                 return
@@ -132,7 +132,7 @@ class SiteMapper {
               const lastmod = Date.parse(chunkobj.lastmod)
               if (lastmod && lastmod != NaN) {
                 if (lastmod > since) {
-                  this._getRecursive(locurl, since, outstream).catch((err) => {
+                  this._getRecursive(locurl, since, useCache, outstream).catch((err) => {
                   })
                 }
                 return
@@ -159,14 +159,14 @@ class SiteMapper {
     })
   }
 
-  _get = async (url) => {
+  _get = async (url, useCache) => {
     return new Promise((resolve, reject) => {
       const urls = []
       const sitemaps = []
       let loc = null
       let lastmod = null
       let text = ""
-      http.stream(url).then((httpstream) => {
+      http.stream(url, {useCache, timeout_ms:3000}).then((httpstream) => {
         if (!httpstream) {
           resolve(null)
           return
