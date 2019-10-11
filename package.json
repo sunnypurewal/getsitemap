@@ -1,12 +1,13 @@
 {
   "name": "getsitemap",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Node.js module that recursively crawls a website's sitemap and returns a stream of URLs",
   "keywords": [
     "sitemap",
     "crawl",
     "scrape",
-    "robots"
+    "robots",
+    "webcrawl"
   ],
   "homepage": "https://github.com/sunnypurewal/getsitemap",
   "bugs": {
@@ -24,7 +25,7 @@
     "url": "github:sunnypurewal/getsitemap.git"
   },
   "dependencies": {
-    "hittp": "^0.2.6",
+    "hittp": "^0.2.7",
     "query-string": "^6.8.3",
     "sax": "^1.2.4"
   }

@@ -17,7 +17,7 @@ class SiteMapper {
 
   map = async (url, since) => {
     return new Promise((resolve, reject) => {
-      robots.getSitemaps(url).then((sitemapurls) => {
+      robots.getSitemaps(url, this.useCache).then((sitemapurls) => {
         if (sitemapurls.length === 0) {
           if (typeof(url) === "string") {
             if (url.indexOf("/sitemap.xml") === -1) sitemapurls.push(`${url}/sitemap.xml`)
@@ -160,14 +160,14 @@ class SiteMapper {
     })
   }
 
-  _get = async (url, useCache) => {
+  _get = async (url) => {
     return new Promise((resolve, reject) => {
       const urls = []
       const sitemaps = []
       let loc = null
       let lastmod = null
       let text = ""
-      http.stream(url, {useCache: this.useCache, timeout_ms:3000}).then((httpstream) => {
+      http.stream(url, {  headers: { 'User-Agent': 'Mozilla/5.0' }, useCache: this.useCache, timeout_ms:3000}).then((httpstream) => {
         if (!httpstream) {
           resolve(null)
           return

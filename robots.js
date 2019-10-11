@@ -2,14 +2,14 @@
 const hittp = require("hittp")
 const events = require("events")
 
-const getSitemaps = async (url) => {
+const getSitemaps = async (url, useCache=true) => {
   if (typeof(url) === "string") {
     if (url.indexOf("/robots.txt") === -1) url = `${url}/robots.txt`
   } else if (url.pathname) {
     if (url.pathname.indexOf("robots.txt") === -1) url.pathname = "robots.txt"
   }
   try {
-    const txt = await hittp.get(url)
+    const txt = await hittp.get(url, {useCache})
     const lines = txt.split("\n")
     const sitemaps = []
     for (const line of lines) {
