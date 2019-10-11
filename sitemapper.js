@@ -10,14 +10,13 @@ const str2date = require("./str2date")
 
 class SiteMapper {
 
-  constructor(useCache = false) {
+  constructor() {
     this.outcount = 0
-    this.useCache = useCache
   }
 
   map = async (url, since) => {
     return new Promise((resolve, reject) => {
-      robots.getSitemaps(url, this.useCache).then((sitemapurls) => {
+      robots.getSitemaps(url).then((sitemapurls) => {
         if (sitemapurls.length === 0) {
           if (typeof(url) === "string") {
             if (url.indexOf("/sitemap.xml") === -1) sitemapurls.push(`${url}/sitemap.xml`)
@@ -167,7 +166,7 @@ class SiteMapper {
       let loc = null
       let lastmod = null
       let text = ""
-      http.stream(url, {  headers: { 'User-Agent': 'Mozilla/5.0' }, useCache: this.useCache, timeout_ms:3000}).then((httpstream) => {
+      http.stream(url, {headers: { 'User-Agent': 'Mozilla/5.0' }, timeout_ms:3000}).then((httpstream) => {
         if (!httpstream) {
           resolve(null)
           return
@@ -221,7 +220,7 @@ class SiteMapper {
     })
   }
 
-  static configure = (options) => {
+  configure = (options) => {
     http.configure(options)
   }
 }

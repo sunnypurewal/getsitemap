@@ -8,17 +8,23 @@ getsitemap is a library that takes a domain name as input and returns a stream o
 }
 ```
 
+### See [crawlbot](https://www.npmjs.com/package/crawlbot) for an easy-to-use crawling library based on getsitemap
+
 ## Usage
 Streaming the URL set to a file. The file will be of [ndjson](http://ndjson.org/) type, which means that each line will be a JSON object. Note that this will *not* be a valid JSON file but is useful for reading large files line-by-line.
 ```
 const getsitemap = require("getsitemap")
 
-getsitemap.map("theintercept.com").then((sitemapstream) => {
+const url = "theintercept.com"
+const since = Date.parse("2019-10-01")
+
+const mapper = new getsitemap.SiteMapper()
+mapper.map(url, since).then((sitemapstream) => {
   const file = fs.createWriteStream(`./intercept.ndjson`)
   sitemapstream.pipe(file)
-}
+})
 /* OR */
-getsitemap.map("theintercept.com").then((sitemapstream) => {
+mapper.map(url, since).then((sitemapstream) => {
   sitemapstream.on("data", (obj) => {
     // obj.url, obj.lastmod
   })
@@ -31,8 +37,9 @@ getsitemap uses [hittp](https://www.npmjs.com/package/hittp) under the hood to m
 
 ```
 const getsitemap = require("getsitemap")
+const mapper = new getsitemap.SiteMapper()
 // Defaults:
-getsitemap.configure({
+mapper.configure({
   delay_ms: 3000,
   maxConnections: 16,
   cachePath: "./.cache"
