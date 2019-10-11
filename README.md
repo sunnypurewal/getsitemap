@@ -9,12 +9,12 @@ getsitemap is a library that takes a domain name as input and returns a stream o
 ```
 
 ## Usage
-Streaming the URL set to a file. The file will be of `jsonlines` type, which means that each line will be a JSON object. Note that this will *not* be a valid JSON file but is useful for reading large files line-by-line.
+Streaming the URL set to a file. The file will be of [ndjson](http://ndjson.org/) type, which means that each line will be a JSON object. Note that this will *not* be a valid JSON file but is useful for reading large files line-by-line.
 ```
 const getsitemap = require("getsitemap")
 
 getsitemap.map("theintercept.com").then((sitemapstream) => {
-  const file = fs.createWriteStream(`./intercept.txt`)
+  const file = fs.createWriteStream(`./intercept.ndjson`)
   sitemapstream.pipe(file)
 }
 /* OR */
@@ -38,4 +38,5 @@ getsitemap.configure({
   cachePath: "./.cache"
 })
 ```
+
 ### Don't forget to add your cache path to .gitignore! Default path is `./.cache`

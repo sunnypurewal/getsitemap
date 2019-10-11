@@ -10,7 +10,7 @@ const str2date = require("./str2date")
 
 class SiteMapper {
 
-  constructor(useCache = true) {
+  constructor(useCache = false) {
     this.outcount = 0
     this.useCache = useCache
   }
