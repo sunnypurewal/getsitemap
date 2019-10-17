@@ -7,6 +7,7 @@ const stream = require("stream")
 const robots = require("./robots")
 const queryString = require('query-string');
 const str2date = require("./str2date")
+const os = require("os")
 
 class SiteMapper {
 
@@ -38,6 +39,8 @@ class SiteMapper {
               })
               sitemapstream.pipe(outstream)
             }
+          }).catch((err) => {
+            console.error(err.message, sitemapurl)
           })
         }
       }).catch((err) => {
@@ -49,13 +52,14 @@ class SiteMapper {
   get = async (url, since) => {
     return new Promise((resolve, reject) => {
       if (typeof(url) === "string") url = http.str2url(url)
+      if (!url) reject(new Error("Invalid URL"))
       if (url.pathname.endsWith(".gz")) {
         url.pathname = url.pathname.slice(0, -3)
       }
       this._getRecursive(url, since).then((sitemapstream) => {
         resolve(sitemapstream)
       }).catch((err) => {
-        resolve(null)
+        reject(err)
       })
     })
   }
@@ -84,8 +88,8 @@ class SiteMapper {
             isSitemapIndex = true
             // return
           } else if (isSitemapIndex) {
-            const chunkobj = JSON.parse(chunkstring)
-            const locurl = http.str2url(chunkobj.loc)
+            const split = chunkstring.split("|")
+            const locurl = http.str2url(split[0])
             if (locurl && locurl.search.length > 0) {
               //try to parse date from query string
               const args = queryString.parse(locurl.search)
@@ -128,8 +132,8 @@ class SiteMapper {
                 return
               }
             }
-            if (chunkobj.lastmod) {
-              const lastmod = Date.parse(chunkobj.lastmod)
+            if (split[1].length > 0) {
+              const lastmod = Date.parse(split[1])
               if (lastmod && lastmod != NaN) {
                 if (lastmod > since) {
                   this._getRecursive(locurl, since, outstream).catch((err) => {
@@ -140,8 +144,8 @@ class SiteMapper {
             }
           }
           else {
-            const chunkobj = JSON.parse(chunkstring)
-            const lastmod = Date.parse(chunkobj.lastmod)
+            const split = chunkstring.split("|")
+            const lastmod = Date.parse(split[1])
             if (lastmod && lastmod !== NaN && lastmod > since) {
               outstream.write(chunk)
             }
@@ -166,7 +170,7 @@ class SiteMapper {
       let loc = null
       let lastmod = null
       let text = ""
-      http.stream(url, {headers: { 'User-Agent': 'Mozilla/5.0' }, timeout_ms:3000}).then((httpstream) => {
+      http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
         if (!httpstream) {
           resolve(null)
           return
@@ -186,24 +190,16 @@ class SiteMapper {
             loc = text
           } else if (name === "lastmod" || name === "news:publication_date") {
             lastmod = text
-          } else if (name === "url") {
-            if (passthrough.writableEnded) return
-            const obj = {loc}
-            if (lastmod) obj.lastmod = lastmod
-            passthrough.write(`${JSON.stringify(obj)}
-  `)
-          } else if (name === "sitemap") {
-            if (passthrough.writableEnded) return
-            const obj = {loc}
-            if (lastmod) obj.lastmod = lastmod
-            passthrough.write(`${JSON.stringify(obj)}
-  `)
-          } else if (name === "urlset") {
-            if (passthrough.writableEnded) return
-            passthrough.end()
-          } else if (name === "sitemapindex") {
-            if (passthrough.writableEnded) return
-            passthrough.end()
+          } else if (!passthrough.writableEnded) {
+            if (name === "url") {
+              passthrough.write(`${loc}|${lastmod || "|"}`)
+            } else if (name === "sitemap") {
+              passthrough.write(`${loc}|${lastmod || "|"}`)
+            } else if (name === "urlset") {
+              passthrough.end()
+            } else if (name === "sitemapindex") {
+              passthrough.end()
+            }
           }
           text = null
         })

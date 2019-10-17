@@ -3,13 +3,17 @@ const hittp = require("hittp")
 const events = require("events")
 
 const getSitemaps = async (url, useCache=true) => {
+  let robotsurl = null
   if (typeof(url) === "string") {
-    if (url.indexOf("/robots.txt") === -1) url = `${url}/robots.txt`
+    if (url.indexOf("/robots.txt") === -1) robotsurl = `${url}/robots.txt`
   } else if (url.pathname) {
-    if (url.pathname.indexOf("robots.txt") === -1) url.pathname = "robots.txt"
+    robotsurl = new URL(url.href)
+    if (robotsurl.pathname.indexOf("robots.txt") === -1) {
+      robotsurl.pathname = "robots.txt"
+    }
   }
   try {
-    const txt = await hittp.get(url, {useCache})
+    const txt = await hittp.get(robotsurl)
     const lines = txt.split("\n")
     const sitemaps = []
     for (const line of lines) {
