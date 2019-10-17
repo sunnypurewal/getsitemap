@@ -23,7 +23,7 @@ class SiteMapper {
             if (url.indexOf("/sitemap.xml") === -1) sitemapurls.push(`${url}/sitemap.xml`)
           } else if (url.pathname) {
             if (url.pathname.indexOf("sitemap.xml") === -1) {
-              const sitemapurl = url
+              const sitemapurl = new URL(url.href)
               sitemapurl.pathname = "sitemap.xml"
               sitemapurls.push(sitemapurl)
             }
@@ -40,7 +40,7 @@ class SiteMapper {
               sitemapstream.pipe(outstream)
             }
           }).catch((err) => {
-            console.error(err.message, sitemapurl)
+            // console.error(err.message, sitemapurl)
           })
         }
       }).catch((err) => {
