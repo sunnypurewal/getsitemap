@@ -1,6 +1,49 @@
 'use strict'
 
-const parse = (pathname) => {
+const queryString = require('query-string');
+const hittp = require("hittp")
+
+const parse = (urlorstring) => {
+  let url = null
+  if (typeof(urlorstring) === "string") url = hittp.str2url(urlorstring)
+  else if (urlorstring.href) url = hittp.str2url(urlorstring.href)
+  else return null // Invalid input
+
+  return parseQuery(url) || parsePath(url)
+}
+
+const parseQuery = (url) => {
+  if (url.search.length === 0) return null
+  //try to parse date from query string
+  const args = queryString.parse(url.search)
+  let yyyy = null, mm = "", dd = ""
+  for (const key in args) {
+    const lowerkey = key.toLowerCase()
+    if (lowerkey === "yyyy" || lowerkey === "yy") {
+      yyyy = args[key]
+    } else if (lowerkey === "mm" || lowerkey === "m") {
+      mm = args[key]
+    } else if (lowerkey === "dd" || lowerkey === "d") {
+      dd = args[key]
+    }
+  }
+  if (yyyy) {
+    let dateString = yyyy
+    if (mm.length) dateString += `-${mm}`
+    else dateString += "-12" 
+    if (dd.length) dateString += `-${dd}`
+    else dateString += "-31"
+    const date = Date.parse(dateString)
+    if (date && date != NaN) {
+      return date
+    }
+  }
+  return null
+}
+
+const parsePath = (url) => {
+  if (url.pathname.length === 0) return null
+  const pathname = url.pathname
   let yyyy = null, mm = null, dd = null
   let index = pathname.search(/\D(20|19)\d{2}/g)
   if (index === -1) index = pathname.search(/(20|19)\d{2}\D/g)
@@ -50,14 +93,14 @@ const parse = (pathname) => {
     const ddint = parseInt(dd)
     // console.log(yyyy, mmint, ddint)
     if (mmint != NaN && mmint > 0 && mmint <= 12) dateString += `-${mm}`
-    else dateString += "-12" 
+    else return null // Don't trust the date if we don't find a month
     if (ddint != NaN && ddint > 0 && ddint <= 31) dateString += `-${dd}`
     else dateString += "-31"
     // console.log("Built datestring", dateString, "from", yyyy, mm, dd)
-    const lastmod = Date.parse(dateString)
+    const date = Date.parse(dateString)
     // console.log("Parsed to ", lastmod)
-    if (lastmod && lastmod !== NaN) {
-      return lastmod
+    if (date && date !== NaN) {
+      return date
     }
   }
   let yyyymmddIndex = pathname.search(/20\d{2}\D?\d{1,2}[\D?\d{1,2}]?/g)
@@ -92,19 +135,17 @@ const parse = (pathname) => {
     const mmint = parseInt(mm)
     const ddint = parseInt(dd)
     if (mmint && mmint > 0 && mmint <= 12) dateString += `-${mm}`
-    else dateString += "-12" 
+    else return null // Don't trust the date if we don't find a month
     if (ddint && ddint > 0 && ddint <= 31) dateString += `-${dd}`
     else dateString += "-31"
     // console.log(pathname, dateString, "from", yyyy, mm, dd)
-    const lastmod = Date.parse(dateString)
+    const date = Date.parse(dateString)
     // console.log("Parsed to ", lastmod)
-    if (lastmod && lastmod !== NaN) {
-      return lastmod
+    if (date && date !== NaN) {
+      return date
     }
   }
   return null
 }
 
-module.exports = {
-  parse
-}
+module.exports = parse

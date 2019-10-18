@@ -1,13 +1,9 @@
 'use strict'
 
 const http = require("hittp")
-const sax = require("sax"),
-  strict = true
 const stream = require("stream")
 const robots = require("./robots")
-const queryString = require('query-string');
-const str2date = require("./str2date")
-const os = require("os")
+const url2date = require("./url2date")
 const URLStream = require("./urlstream")
 
 class SiteMapper {
@@ -18,6 +14,13 @@ class SiteMapper {
 
   map = async (url, since) => {
     return new Promise((resolve, reject) => {
+      let date = null
+      if (typeof(since) === "string") {
+        date = Date.parse(since)
+        if (!date || isNaN(date)) throw new Error("Invalid date for 'since' parameter")
+      } else {
+        date = since
+      }
       robots.getSitemaps(url).then((sitemapurls) => {
         if (sitemapurls.length === 0) {
           if (typeof(url) === "string") {
@@ -31,15 +34,11 @@ class SiteMapper {
         const outstream = stream.PassThrough({autoDestroy: true})
         resolve(outstream)
         for (const sitemapurl of sitemapurls) {
-          this.get(sitemapurl, since).then((sitemapstream) =>  {
-            if (sitemapstream) {
-              // sitemapstream.on("end", () => {
-              //   outstream.end()
-              // })
-              sitemapstream.pipe(outstream)
-            }
+          this.get(sitemapurl, date).then((sitemapstream) =>  {
+            sitemapstream.pipe(outstream)
+            // console.log(sitemapstream)
           }).catch((err) => {
-            // console.error(err.message, sitemapurl)
+            console.error(err.message, sitemapurl)
           })
         }
       }).catch((err) => {
@@ -66,14 +65,17 @@ class SiteMapper {
   _getRecursive = async (url, since, outstream=null) => {
     this.outcount += 1
     return new Promise((resolve, reject) => {
-      this._get(url).then((urlstream) => {
+      this._get(url, since).then((urlstream) => {
         if (!outstream) {
-          outstream = stream.PassThrough({autoDestroy: true})
+          outstream = new stream.PassThrough()
           resolve(outstream)
         }
-        urlstream.pipe(outstream)
+        urlstream.on("sitemap", (sitemapurl) => {
+          this._getRecursive(sitemapurl, since, outstream).catch((err) => {})
+        })
+        urlstream.pipe(outstream, {end:false})
       }).catch((err) => {
-        // console.log("urlstream error" this.outcount)
+        // console.log("urlstream error", this.outcount)
         this.outcount -= 1
         if (this.outcount == 0) {
           if (outstream) outstream.end()
@@ -83,10 +85,10 @@ class SiteMapper {
     })
   }
 
-  _get = async (url) => {
+  _get = async (url, since) => {
     return new Promise((resolve, reject) => {
       http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
-        const urlstream = new URLStream()
+        const urlstream = new URLStream(since, httpstream.readableEncoding)
         resolve(httpstream.pipe(urlstream))
       }).catch((err) => {
         reject(err)
