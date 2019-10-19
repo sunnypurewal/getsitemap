@@ -7,11 +7,9 @@ const url2date = require("./url2date")
 
 class URLStream extends stream.Transform {
 
-  constructor(since, encoding, options) {
+  constructor(since, options) {
     options = options || {}
     options.decodeStrings = false
-    options.encoding = encoding
-    options.defaultEncoding = encoding
     super(options)
     this.since = since
     this.mode = -1
@@ -20,7 +18,8 @@ class URLStream extends stream.Transform {
     this.lastChunk = null
   }
 
-  _transform(chunk, enc, cb) {
+  _transform(c, enc, cb) {
+    let chunk = c.toString()
     if (this.mode === -1) {
       if (chunk.search(/<\w*sitemapindex/ig) !== -1) {
         this.mode = 1
@@ -64,7 +63,7 @@ class URLStream extends stream.Transform {
         const date = url2date(loc) || Date.parse(lastmod)
         if (date && !isNaN(date) && date >= this.since) {
           if (this.mode === 0) {
-            this.push(`${loc}||${lastmod ? lastmod : ""}\n`, enc)
+            this.push(`${loc}||${lastmod ? lastmod : ""}\n`)
           } else {
             this.emit("sitemap", loc)
           }
