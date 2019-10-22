@@ -57,36 +57,36 @@ const parsePath = (url) => {
     return Date.parse(`${yyyy}-12-31`)
   }
   // console.log(pathname)
-  let dateString = `${yyyy}`
   let ddmmyyyyindex = pathname.search(/[\d{2}\D?]?\d{2}\D?20\d{2}/g)
   if (ddmmyyyyindex != -1) {
+    let dateString = `${yyyy}`
     // console.log(yyyy, pathname)
     // console.log("DDMMYYYY")
-    index -= 1
-    let char = pathname[index]
+    let i = index - 1
+    let char = pathname[i]
     if (char && char.search(/\d/g) === -1) {
-      index -= 1
-      char = pathname[index]
+      i -= 1
+      char = pathname[i]
       // console.log(char)
     }
     mm = ""
     dd = ""
-    while (char && char.search(/\d/g) !== -1 && index < pathname.length && mm.length <= 2) {
+    while (char && char.search(/\d/g) !== -1 && i < pathname.length && mm.length < 2) {
       mm += char
-      index -= 1
-      char = pathname[index]
+      i -= 1
+      char = pathname[i]
       // console.log(char)
     }
     mm = mm.split("").reverse().join("")
     if (char && char.search(/\d/g) === -1) {
-      index -= 1
-      char = pathname[index]
+      i -= 1
+      char = pathname[i]
       // console.log(char)
     }
-    while (char && char.search(/\d/g) !== -1 && index < pathname.length && dd.length <= 2) {
+    while (char && char.search(/\d/g) !== -1 && i < pathname.length && dd.length < 2) {
       dd += char
-      index -= 1
-      char = pathname[index]
+      i -= 1
+      char = pathname[i]
       // console.log(char)
     }
     dd = dd.split("").reverse().join("")
@@ -94,7 +94,6 @@ const parsePath = (url) => {
     const ddint = parseInt(dd)
     // console.log(yyyy, mmint, ddint)
     if (mmint != NaN && mmint > 0 && mmint <= 12) dateString += `-${mm}`
-    else return null // Don't trust the date if we don't find a month
     if (ddint != NaN && ddint > 0 && ddint <= 31) dateString += `-${dd}`
     else dateString += "-31"
     // console.log("Built datestring", dateString, "from", yyyy, mm, dd)
@@ -106,37 +105,38 @@ const parsePath = (url) => {
   }
   let yyyymmddIndex = pathname.search(/20\d{2}\D?\d{1,2}[\D?\d{1,2}]?/g)
   if (yyyymmddIndex !== -1) {
+    let dateString = `${yyyy}`
     // console.log("YYYYMMDD")
-    index += 4
-    let char = pathname[index]
+    let i = index + 4
+    let char = pathname[i]
     // console.log(char)
     if (char && char.search(/\d/g) === -1) {
-      index += 1
-      char = pathname[index]
+      i += 1
+      char = pathname[i]
       // console.log(char)
     }
     mm = ""
     dd = ""
-    while (char && char.search(/\d/g) !== -1 && index < pathname.length && mm.length <= 2) {
+    while (char && char.search(/\d/g) !== -1 && i < pathname.length && mm.length < 2) {
       mm += char
-      index += 1
-      char = pathname[index]
-    }
-    if (char && char.search(/\d/g) === -1) {
-      index += 1
-      char = pathname[index]
+      i += 1
+      char = pathname[i]
       // console.log(char)
     }
-    while (char && char.search(/\d/g) !== -1 && index < pathname.length && dd.length <= 2) {
+    if (char && char.search(/\d/g) === -1) {
+      i += 1
+      char = pathname[i]
+      // console.log(char)
+    }
+    while (char && char.search(/\d/g) !== -1 && i < pathname.length && dd.length < 2) {
       dd += char
-      index += 1
-      char = pathname[index]
+      i += 1
+      char = pathname[i]
       // console.log(char)
     }
     const mmint = parseInt(mm)
     const ddint = parseInt(dd)
     if (mmint && mmint > 0 && mmint <= 12) dateString += `-${mm}`
-    else return null // Don't trust the date if we don't find a month
     if (ddint && ddint > 0 && ddint <= 31) dateString += `-${dd}`
     else dateString += "-31"
     // console.log(pathname, dateString, "from", yyyy, mm, dd)

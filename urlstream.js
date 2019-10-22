@@ -21,7 +21,7 @@ class URLStream extends stream.Transform {
   _transform(c, enc, cb) {
     let chunk = c.toString()
     if (this.mode === -1) {
-      if (chunk.search(/<\w*sitemapindex/ig) !== -1) {
+      if (chunk.search(/<\s*sitemapindex/ig) !== -1) {
         this.mode = 1
       } else {
         this.mode = 0
@@ -37,8 +37,8 @@ class URLStream extends stream.Transform {
       opens = chunk.matchAll(/<url>/gi)
       closes = chunk.matchAll(/<\/url>/gi)
     } else {
-      opens = chunk.matchAll(/<\w*sitemap>/gi)
-      closes = chunk.matchAll(/<\w*\/\w*sitemap>/gi)
+      opens = chunk.matchAll(/<\s*sitemap>/gi)
+      closes = chunk.matchAll(/<\s*\/\s*sitemap>/gi)
     }
     this.open = opens.next()
     this.close = closes.next()
@@ -52,10 +52,10 @@ class URLStream extends stream.Transform {
       }
       const closeval = this.close.value
       const xml = openval.input.slice(openval.index, closeval.index + closeval[0].length)
-      let loc = xml.match(/<\w*loc\w*>[\w|\W]*<\w*\/\w*loc\w*>/ig)
+      let loc = xml.match(/<\s*loc\s*>[\w|\W]*<\s*\/\s*loc\s*>/ig)
       if (loc && loc.length > 0) {
         loc = urldecode(loc[0].slice(5, -6))
-        let lastmod = xml.match(/<(\w*lastmod\w*|\w*news\:publication_date\w*)>[\w|\W]*<\/(\w*lastmod\w*|\w*news\:publication_date\w*)>/ig)
+        let lastmod = xml.match(/<(\s*lastmod\s*|\s*news\:publication_date\s*)>[\w|\W]*<\/(\s*lastmod\s*|\s*news\:publication_date\s*)>/ig)
         if (lastmod && lastmod.length > 0) {
           lastmod = lastmod[0]
           lastmod = lastmod.slice(lastmod.indexOf(">")+1, lastmod.indexOf("</"))
@@ -63,7 +63,7 @@ class URLStream extends stream.Transform {
         const date = url2date(loc) || Date.parse(lastmod)
         if (date && !isNaN(date) && date >= this.since) {
           if (this.mode === 0) {
-            this.push(`${loc}||${lastmod ? lastmod : ""}\n`)
+            this.push(`${loc}||${(new Date(date)).toISOString()}\n`)
           } else {
             this.emit("sitemap", loc)
           }
@@ -84,11 +84,11 @@ class URLStream extends stream.Transform {
     }
     if (this.lastChunk) {
       if (this.mode === 0) {
-        if (this.lastChunk.search(/<\w*\/\w*urlset\w*>/ig) !== -1) {
+        if (this.lastChunk.search(/<\s*\/\s*urlset\s*>/ig) !== -1) {
           this.end()
         }
       } else {
-        if (this.lastChunk.search(/<\w*\/\w*sitemapindex\w*>/ig) !== -1) {
+        if (this.lastChunk.search(/<\s*\/\s*sitemapindex\s*>/ig) !== -1) {
           this.end()
         }
       }
