@@ -2,7 +2,7 @@
 const hittp = require("hittp")
 const events = require("events")
 
-const getSitemaps = async (url, useCache=true) => {
+async function getSitemaps(url, useCache=true) {
   let robotsurl = null
   if (typeof(url) === "string") {
     if (url.indexOf("/robots.txt") === -1) robotsurl = `${url}/robots.txt`
@@ -31,7 +31,7 @@ const getSitemaps = async (url, useCache=true) => {
   }
 }
 
-const getKeyVal = (line, lower=true) => {
+function getKeyVal(line, lower=true) {
   if (line.length == 0) return null
   if (line.startsWith("#")) return null
   let colon = line.indexOf(":")

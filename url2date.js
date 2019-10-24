@@ -3,7 +3,7 @@
 const queryString = require('query-string');
 const hittp = require("hittp")
 
-const parse = (urlorstring) => {
+function parse(urlorstring) {
   let url = null
   if (typeof(urlorstring) === "string") url = hittp.str2url(urlorstring)
   else if (urlorstring.href) url = hittp.str2url(urlorstring.href)
@@ -13,7 +13,7 @@ const parse = (urlorstring) => {
   return parseQuery(url) || parsePath(url)
 }
 
-const parseQuery = (url) => {
+function parseQuery(url) {
   if (url.search.length === 0) return null
   //try to parse date from query string
   const args = queryString.parse(url.search)
@@ -42,7 +42,7 @@ const parseQuery = (url) => {
   return null
 }
 
-const parsePath = (url) => {
+function parsePath(url) {
   if (url.pathname.length === 0) return null
   const pathname = url.pathname
   let yyyy = null, mm = null, dd = null

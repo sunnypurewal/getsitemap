@@ -12,7 +12,7 @@ class SiteMapper {
     this.outcount = 0
   }
 
-  map = async (url, since) => {
+  async map(url, since) {
     return new Promise((resolve, reject) => {
       let date = null
       if (typeof(since) === "string") {
@@ -47,7 +47,7 @@ class SiteMapper {
     })
   }
 
-  get = async (url, since) => {
+  async get(url, since) {
     return new Promise((resolve, reject) => {
       if (typeof(url) === "string") url = http.str2url(url)
       if (!url) reject(new Error("Invalid URL"))
@@ -62,7 +62,7 @@ class SiteMapper {
     })
   }
 
-  _getRecursive = async (url, since, outstream=null) => {
+  async _getRecursive(url, since, outstream=null) {
     this.outcount += 1
     return new Promise((resolve, reject) => {
       this._get(url, since).then((urlstream) => {
@@ -85,7 +85,7 @@ class SiteMapper {
     })
   }
 
-  _get = async (url, since) => {
+  async _get(url, since) {
     return new Promise((resolve, reject) => {
       http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
         const urlstream = new URLStream(since)
@@ -96,7 +96,7 @@ class SiteMapper {
     })
   }
 
-  configure = (options) => {
+  configure(options) {
     http.configure(options)
   }
 }
