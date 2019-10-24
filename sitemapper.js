@@ -17,8 +17,9 @@ class SiteMapper {
 
   }
 
-  async map(url, since) {
-    return new Promise((resolve, reject) => {
+  map(url, since) {
+    const outstream = stream.PassThrough({autoDestroy: true})
+    // process.nextTick( (outstream) => {
       let date = null
       if (typeof(since) === "string") {
         date = Date.parse(since)
@@ -36,8 +37,6 @@ class SiteMapper {
             sitemapurls.push(`${url.origin}/sitemap_index.xml`)
           }
         }
-        const outstream = stream.PassThrough({autoDestroy: true})
-        resolve(outstream)
         for (const sitemapurl of sitemapurls) {
           // const sitemapstream = await this.get(sitemapurl, date)
           // sitemapstream.pipe(outstream, {end: false})
@@ -59,10 +58,9 @@ class SiteMapper {
             console.error(err.message, sitemapurl)
           })
         }
-      }).catch((err) => {
-        reject(err)
       })
-    })
+    // })
+    return outstream
   }
 
   async get(url, since) {
