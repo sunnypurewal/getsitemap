@@ -9,7 +9,12 @@ const URLStream = require("./urlstream")
 class SiteMapper {
 
   constructor() {
-    this.outcount = 0
+    this.outStreams = []
+    this.sitemapURLs = []
+  }
+
+  cancel() {
+
   }
 
   async map(url, since) {
@@ -34,7 +39,20 @@ class SiteMapper {
         const outstream = stream.PassThrough({autoDestroy: true})
         resolve(outstream)
         for (const sitemapurl of sitemapurls) {
+          // const sitemapstream = await this.get(sitemapurl, date)
+          // sitemapstream.pipe(outstream, {end: false})
           this.get(sitemapurl, date).then((sitemapstream) =>  {
+            sitemapstream.on("pipe", () => {
+              this.sitemapURLs.push(sitemapurl)
+            })
+            sitemapstream.on("end", () => {
+              const index = this.sitemapURLs.indexOf(sitemapurl)
+              if (index !== -1) {
+                this.sitemapURLs.splice(index, 1)
+              } else {
+                console.error("Ended sitemapstream was not found in list")
+              }
+            })
             sitemapstream.pipe(outstream)
             // console.log(sitemapstream)
           }).catch((err) => {
@@ -62,8 +80,7 @@ class SiteMapper {
     })
   }
 
-  async _getRecursive(url, since, outstream=null) {
-    this.outcount += 1
+  async _getRecursive(url, since, outstream=null, parentURL=null) {
     return new Promise((resolve, reject) => {
       this._get(url, since).then((urlstream) => {
         if (!outstream) {
@@ -88,7 +105,7 @@ class SiteMapper {
   async _get(url, since) {
     return new Promise((resolve, reject) => {
       http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
-        const urlstream = new URLStream(since)
+        const urlstream = new URLStream(url, since)
         resolve(httpstream.pipe(urlstream))
       }).catch((err) => {
         reject(err)
