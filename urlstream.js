@@ -11,7 +11,7 @@ class URLStream extends stream.Transform {
     options = options || {}
     options.decodeStrings = false
     super(options)
-    this.since = Date.parse(since)
+    this.since = since
     this.mode = -1
     this.open = null
     this.close = null

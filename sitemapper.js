@@ -50,7 +50,7 @@ class SiteMapper {
               if (index !== -1) {
                 this.sitemapURLs.splice(index, 1)
               } else {
-                console.error("Ended sitemapstream was not found in list")
+                // console.error("Ended sitemapstream was not found in list")
               }
             })
             sitemapstream.pipe(outstream)
@@ -80,7 +80,7 @@ class SiteMapper {
     })
   }
 
-  async _getRecursive(url, since, outstream=null, parentURL=null) {
+  async _getRecursive(url, since, outstream=null) {
     return new Promise((resolve, reject) => {
       this._get(url, since).then((urlstream) => {
         if (!outstream) {

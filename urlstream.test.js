@@ -4,7 +4,7 @@ test("includes parent", () => {
   const urlstream = new URLStream("http://parent.com", "2019-10-22")
   
   urlstream.on("data", (chunk) => {
-    const index = chunk.toString().indexOf("http://parent.com")
+    let index = chunk.toString().indexOf("http://parent.com")
     expect(index).not.toBe(-1)
     urlstream.end()
   })
