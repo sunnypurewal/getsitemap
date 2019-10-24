@@ -88,7 +88,7 @@ class SiteMapper {
   _get = async (url, since) => {
     return new Promise((resolve, reject) => {
       http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
-        const urlstream = new URLStream(since, httpstream.readableEncoding)
+        const urlstream = new URLStream(since)
         resolve(httpstream.pipe(urlstream))
       }).catch((err) => {
         reject(err)

@@ -7,7 +7,8 @@ const parse = (urlorstring) => {
   let url = null
   if (typeof(urlorstring) === "string") url = hittp.str2url(urlorstring)
   else if (urlorstring.href) url = hittp.str2url(urlorstring.href)
-  else return null // Invalid input
+  
+  if (!url) return null
 
   return parseQuery(url) || parsePath(url)
 }
