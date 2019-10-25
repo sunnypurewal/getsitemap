@@ -103,7 +103,7 @@ class SiteMapper {
         //   }, 10000)
         // }
         // console.error("Feeder to sitemapstream errored", this.outcount)
-        console.error(err)
+        // console.error(err)
         reject(err)
       })
     })
