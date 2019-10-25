@@ -13,6 +13,8 @@ class SiteMapper {
     this.domain = http.str2url(domainstring)
     if (!this.domain) throw new Error("Invalid URL", domain)
     this.hosts = [this.domain]
+    this.outcount = 0
+    this.timeout = null
   }
 
   cancel() {
@@ -58,6 +60,7 @@ class SiteMapper {
 
   async get(url, since) {
     return new Promise((resolve, reject) => {
+      this.outcount += 1
       this._getRecursive(url, since).then((sitemapstream) => {
         resolve(sitemapstream)
       }).catch((err) => {
@@ -68,21 +71,39 @@ class SiteMapper {
 
   async _getRecursive(url, since, outstream=null) {
     return new Promise((resolve, reject) => {
+      if (this.timeout) {
+        console.log("Resetting timeout", this.outcount)
+        clearTimeout(this.timeout)
+        this.timeout = null
+      }
       this._get(url, since).then((urlstream) => {
         if (!outstream) {
           outstream = new stream.PassThrough()
           resolve(outstream)
         }
         urlstream.on("sitemap", (sitemapurl) => {
+          this.outcount += 1
           this._getRecursive(sitemapurl, since, outstream).catch((err) => {})
         })
         urlstream.pipe(outstream, {end:false})
+        urlstream.on("end", () => {
+          this.outcount -= 1
+          // if (this.outcount === 0 && !this.timeout) {
+          //   this.timeout = setTimeout(() => {
+          //     outstream.end()
+          //   }, 10000)
+          // }
+          // console.log("Feeder to sitemapstream ended", this.outcount)
+        })
       }).catch((err) => {
-        // console.log("urlstream error", this.outcount)
         this.outcount -= 1
-        if (this.outcount == 0) {
-          if (outstream) outstream.end()
-        }
+        // if (this.outcount === 0 && !this.timeout) {
+        //   this.timeout = setTimeout(() => {
+        //     outstream.end()
+        //   }, 10000)
+        // }
+        // console.error("Feeder to sitemapstream errored", this.outcount)
+        console.error(err)
         reject(err)
       })
     })

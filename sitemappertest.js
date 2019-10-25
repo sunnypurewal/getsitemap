@@ -15,6 +15,3 @@ sitemapstream.pipe(file)
 sitemapstream.on("end", () => {
   console.log("Sitemapstream closed")
 })
-setTimeout(() => {
-  mapper.cancel()
-}, 2000)
