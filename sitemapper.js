@@ -28,7 +28,7 @@ class SiteMapper {
     const outstream = stream.PassThrough({autoDestroy: true})
     let urlcopy = null
     if (typeof(url) === "string") urlcopy = http.str2url(url)
-    if (!urlcopy) reject(new Error("Invalid URL"))
+    if (!urlcopy) throw new Error("Invalid URL")
     if (urlcopy.pathname.endsWith(".gz")) {
       urlcopy.pathname = urlcopy.pathname.slice(0, -3)
     }
