@@ -50,7 +50,7 @@ class SiteMapper {
             sitemapstream.pipe(outstream)
             // console.log(sitemapstream)
           }).catch((err) => {
-            console.error(err.message, sitemapurl)
+            // console.error(err.message, sitemapurl)
           })
         }
       })
