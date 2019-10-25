@@ -2,12 +2,14 @@ const { SiteMapper } = require("./sitemapper")
 const { createWriteStream, readFileSync } = require("fs")
 
 let domains = readFileSync("./domains.json")
-domains = JSON.parse(domains.toString())
+domains = domains.toString()
+domains = JSON.parse(domains)
+
 let random = Math.floor(Math.random() * domains.length)
 let domain = domains[random]
-
-const mapper = new SiteMapper()
-const sitemapstream = mapper.map(domain, "2019-10-23")
+const mapper = new SiteMapper(domain)
+console.log(mapper.domain)
+const sitemapstream = mapper.map("2019-10-23")
 const file = createWriteStream("./.playground/streamtest.txt")
 sitemapstream.pipe(file)
 sitemapstream.on("end", () => {

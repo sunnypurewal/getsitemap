@@ -8,9 +8,14 @@ const URLStream = require("./urlstream")
 
 class SiteMapper {
 
-  constructor() {
-    this.outStreams = []
-    this.hosts = []
+  constructor(domain) {
+    let domainstring = domain.slice()
+    if (domainstring.indexOf("www.") === -1) {
+      domainstring = `www.${domainstring}`
+    }
+    this.domain = http.str2url(domainstring)
+    // else throw new Error("Invalid URL", domain)
+    this.hosts = [domain]
   }
 
   cancel() {
@@ -24,14 +29,9 @@ class SiteMapper {
     }
   }
 
-  map(url, since) {
+  map(since) {
     const outstream = stream.PassThrough({autoDestroy: true})
-    let urlcopy = null
-    if (typeof(url) === "string") urlcopy = http.str2url(url)
-    if (!urlcopy) throw new Error("Invalid URL")
-    if (urlcopy.pathname.endsWith(".gz")) {
-      urlcopy.pathname = urlcopy.pathname.slice(0, -3)
-    }
+    let urlcopy = new URL(this.domain.href)
     this.hosts.push(urlcopy.host)
     // process.nextTick( (outstream) => {
       let date = null
