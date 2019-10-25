@@ -38,13 +38,8 @@ class SiteMapper {
       }
       robots.getSitemaps(this.domain).then((sitemapurls) => {
         if (sitemapurls.length === 0) {
-          if (typeof(url) === "string") {
-            sitemapurls.push(`${url}/sitemap.xml`)
-            sitemapurls.push(`${url}/sitemap_index.xml`)
-          } else if (url.origin) {
-            sitemapurls.push(`${url.origin}/sitemap.xml`)
-            sitemapurls.push(`${url.origin}/sitemap_index.xml`)
-          }
+          sitemapurls.push(`${this.domain.href}/sitemap.xml`)
+          sitemapurls.push(`${this.domain.href}/sitemap_index.xml`)
         }
         for (const sitemapurl of sitemapurls) {
           // const sitemapstream = await this.get(sitemapurl, date)
