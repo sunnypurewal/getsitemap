@@ -27,7 +27,7 @@ async function getSitemaps(url, useCache=true) {
     }
     return sitemaps
   } catch (err) {
-    throw(err)
+    return []
   }
 }
 

@@ -36,6 +36,7 @@ class SiteMapper {
         date = since
       }
       robots.getSitemaps(this.domain).then((sitemapurls) => {
+        // TODO: Maybe do this entire process serially for simplicity
         if (sitemapurls.length === 0) {
           sitemapurls.push(`${this.domain.href}/sitemap.xml`)
           sitemapurls.push(`${this.domain.href}/sitemap_index.xml`)
