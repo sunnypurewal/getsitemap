@@ -10,15 +10,29 @@ class SiteMapper {
 
   constructor() {
     this.outStreams = []
-    this.sitemapURLs = []
+    this.hosts = []
   }
 
   cancel() {
-
+    console.log("Cancelling", this.hosts)
+    for (let host of this.hosts) {
+      if (!host) continue
+      if (typeof(host) === "string") host = http.str2url(host)
+      else if (host.href) host = new URL(host.href)
+      else continue
+      http.cancel(host)
+    }
   }
 
   map(url, since) {
     const outstream = stream.PassThrough({autoDestroy: true})
+    let urlcopy = null
+    if (typeof(url) === "string") urlcopy = http.str2url(url)
+    if (!urlcopy) reject(new Error("Invalid URL"))
+    if (urlcopy.pathname.endsWith(".gz")) {
+      urlcopy.pathname = urlcopy.pathname.slice(0, -3)
+    }
+    this.hosts.push(urlcopy.host)
     // process.nextTick( (outstream) => {
       let date = null
       if (typeof(since) === "string") {
@@ -27,7 +41,7 @@ class SiteMapper {
       } else {
         date = since
       }
-      robots.getSitemaps(url).then((sitemapurls) => {
+      robots.getSitemaps(urlcopy).then((sitemapurls) => {
         if (sitemapurls.length === 0) {
           if (typeof(url) === "string") {
             sitemapurls.push(`${url}/sitemap.xml`)
@@ -41,17 +55,6 @@ class SiteMapper {
           // const sitemapstream = await this.get(sitemapurl, date)
           // sitemapstream.pipe(outstream, {end: false})
           this.get(sitemapurl, date).then((sitemapstream) =>  {
-            sitemapstream.on("pipe", () => {
-              this.sitemapURLs.push(sitemapurl)
-            })
-            sitemapstream.on("end", () => {
-              const index = this.sitemapURLs.indexOf(sitemapurl)
-              if (index !== -1) {
-                this.sitemapURLs.splice(index, 1)
-              } else {
-                // console.error("Ended sitemapstream was not found in list")
-              }
-            })
             sitemapstream.pipe(outstream)
             // console.log(sitemapstream)
           }).catch((err) => {
@@ -65,11 +68,6 @@ class SiteMapper {
 
   async get(url, since) {
     return new Promise((resolve, reject) => {
-      if (typeof(url) === "string") url = http.str2url(url)
-      if (!url) reject(new Error("Invalid URL"))
-      if (url.pathname.endsWith(".gz")) {
-        url.pathname = url.pathname.slice(0, -3)
-      }
       this._getRecursive(url, since).then((sitemapstream) => {
         resolve(sitemapstream)
       }).catch((err) => {
@@ -102,6 +100,9 @@ class SiteMapper {
 
   async _get(url, since) {
     return new Promise((resolve, reject) => {
+      if (this.hosts.indexOf(url.host) === -1) {
+        this.hosts.push(url.host)
+      }
       http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
         const urlstream = new URLStream(url, since)
         resolve(httpstream.pipe(urlstream))
