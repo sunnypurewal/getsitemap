@@ -16,7 +16,6 @@ class SiteMapper {
   }
 
   cancel() {
-    console.log("Cancelling", this.hosts)
     for (let host of this.hosts) {
       if (!host) continue
       if (typeof(host) === "string") host = http.str2url(host)
