@@ -10,12 +10,9 @@ class SiteMapper {
 
   constructor(domain) {
     let domainstring = domain.slice()
-    if (domainstring.indexOf("www.") === -1) {
-      domainstring = `www.${domainstring}`
-    }
     this.domain = http.str2url(domainstring)
-    // else throw new Error("Invalid URL", domain)
-    this.hosts = [domain]
+    if (!this.domain) throw new Error("Invalid URL", domain)
+    this.hosts = [this.domain]
   }
 
   cancel() {
@@ -31,8 +28,6 @@ class SiteMapper {
 
   map(since) {
     const outstream = stream.PassThrough({autoDestroy: true})
-    let urlcopy = new URL(this.domain.href)
-    this.hosts.push(urlcopy.host)
     // process.nextTick( (outstream) => {
       let date = null
       if (typeof(since) === "string") {
@@ -41,7 +36,7 @@ class SiteMapper {
       } else {
         date = since
       }
-      robots.getSitemaps(urlcopy).then((sitemapurls) => {
+      robots.getSitemaps(this.domain).then((sitemapurls) => {
         if (sitemapurls.length === 0) {
           if (typeof(url) === "string") {
             sitemapurls.push(`${url}/sitemap.xml`)
@@ -99,10 +94,10 @@ class SiteMapper {
   }
 
   async _get(url, since) {
+    if (this.hosts.indexOf(url.origin) === -1) {
+      this.hosts.push(url.origin)
+    }
     return new Promise((resolve, reject) => {
-      if (this.hosts.indexOf(url.host) === -1) {
-        this.hosts.push(url.host)
-      }
       http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
         const urlstream = new URLStream(url, since)
         resolve(httpstream.pipe(urlstream))

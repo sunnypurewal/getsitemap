@@ -1,6 +1,6 @@
 {
   "name": "getsitemap",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Node.js module that recursively crawls a website's sitemap and returns a stream of URLs",
   "keywords": [
     "sitemap",
