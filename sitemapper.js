@@ -28,7 +28,8 @@ class SiteMapper {
     }
   }
 
-  map(since) {
+  map(since, uoptions) {
+    const options = Object.assign({ delay_ms: 3000 }, uoptions)
     const outstream = stream.PassThrough({autoDestroy: true})
     // process.nextTick( (outstream) => {
       let date = null
@@ -38,7 +39,7 @@ class SiteMapper {
       } else {
         date = since
       }
-      robots.getSitemaps(this.domain).then((sitemapurls) => {
+      robots.getSitemaps(this.domain, options).then((sitemapurls) => {
         // TODO: Maybe do this entire process serially for simplicity
         if (sitemapurls.length === 0) {
           sitemapurls.push(`${this.domain.href}/sitemap.xml`)
@@ -48,7 +49,7 @@ class SiteMapper {
           // const sitemapstream = await this.get(sitemapurl, date)
           // sitemapstream.pipe(outstream, {end: false})
           this.countmap.set(sitemapurl, 0)
-          this.get(sitemapurl, date).then((sitemapstream) =>  {
+          this.get(sitemapurl, date, options).then((sitemapstream) =>  {
             sitemapstream.on("end", () => {
               this.outercount -= 1
               if (this.outercount === 0 && !this.timeout) {
@@ -78,10 +79,10 @@ class SiteMapper {
     return outstream
   }
 
-  async get(url, since) {
+  async get(url, since, options) {
     return new Promise((resolve, reject) => {
       this.outercount += 1
-      this._getRecursive(url, since).then((sitemapstream) => {
+      this._getRecursive(url, since, null, null, options).then((sitemapstream) => {
         resolve(sitemapstream)
       }).catch((err) => {
         reject(err)
@@ -89,7 +90,7 @@ class SiteMapper {
     })
   }
 
-  async _getRecursive(url, since, outstream=null, parent=null) {
+  async _getRecursive(url, since, outstream=null, parent=null, options) {
     let innercount = this.countmap.get(parent || url) || 0
     innercount += 1
     this.countmap.set(parent || url, innercount)
@@ -99,13 +100,13 @@ class SiteMapper {
         clearTimeout(this.timeout)
         this.timeout = null
       }
-      this._get(url, since).then((urlstream) => {
+      this._get(url, since, options).then((urlstream) => {
         if (!outstream) {
           outstream = new stream.PassThrough()
           resolve(outstream)
         }
         urlstream.on("sitemap", (sitemapurl) => {
-          process.nextTick(()=>this._getRecursive(sitemapurl, since, outstream, parent || url).catch((err) => {}))
+          process.nextTick(()=>this._getRecursive(sitemapurl, since, outstream, parent || url, options).catch((err) => {}))
         })
         urlstream.pipe(outstream, {end:false})
         urlstream.on("end", () => {
@@ -135,12 +136,12 @@ class SiteMapper {
     })
   }
 
-  async _get(url, since) {
+  async _get(url, since, options) {
     if (this.hosts.indexOf(url.origin) === -1) {
       this.hosts.push(url.origin)
     }
     return new Promise((resolve, reject) => {
-      http.stream(url, {timeout_ms: 10000}).then((httpstream) => {
+      http.stream(url, options).then((httpstream) => {
         const urlstream = new URLStream(url, since)
         resolve(httpstream.pipe(urlstream))
       }).catch((err) => {

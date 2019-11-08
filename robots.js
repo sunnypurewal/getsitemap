@@ -2,7 +2,7 @@
 const hittp = require("hittp")
 const events = require("events")
 
-async function getSitemaps(url, useCache=true) {
+async function getSitemaps(url, uoptions) {
   let robotsurl = null
   if (typeof(url) === "string") {
     if (url.indexOf("/robots.txt") === -1) robotsurl = `${url}/robots.txt`
@@ -13,7 +13,8 @@ async function getSitemaps(url, useCache=true) {
     }
   }
   try {
-    const txt = await hittp.get(robotsurl)
+    const options = Object.assign({ delay_ms: 3000 }, uoptions)
+    const txt = await hittp.get(robotsurl, options)
     const lines = txt.split("\n")
     const sitemaps = []
     for (const line of lines) {
