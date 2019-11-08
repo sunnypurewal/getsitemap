@@ -1,6 +1,6 @@
 # getsitemap
 
-getsitemap is a library that takes a domain name as input and returns a stream of `<url>` from the `<urlset>` elements of the website's sitemap.xml file(s). It can be used for obtaining a list of pages to crawl from a website. The objects in the stream will match the  [sitemap protocol](https://www.sitemaps.org/protocol.html#urldef):
+getsitemap is a library that takes a domain name as input and returns a stream of `<url>` objects from the `<urlset>` elements of the website's sitemap.xml file(s). It can be used for obtaining a list of pages to crawl from a website. The objects in the stream will match the  [sitemap protocol](https://www.sitemaps.org/protocol.html#urldef):
 ```
 {
   url: "http//newyorktimes.com", // Always present
@@ -8,7 +8,7 @@ getsitemap is a library that takes a domain name as input and returns a stream o
 }
 ```
 
-### See [crawlbot](https://www.npmjs.com/package/crawlbot) for an easy-to-use crawling library based on getsitemap
+### See [Turbo Crawl](https://www.npmjs.com/package/turbocrawl) for a powerful web crawling library based on getsitemap.
 
 ## Usage
 Streaming the URL set to a file. The file will be of [ndjson](http://ndjson.org/) type, which means that each line will be a JSON object. Note that this will *not* be a valid JSON file but is useful for reading large files line-by-line.
@@ -37,13 +37,16 @@ getsitemap uses [hittp](https://www.npmjs.com/package/hittp) under the hood to m
 
 ```
 const getsitemap = require("getsitemap")
+
+const url = "theintercept.com"
+const since = Date.parse("2019-10-01")
+const options = { delay_ms: 3000, cachePath: "./.hittp/cache } // Default
+
 const mapper = new getsitemap.SiteMapper()
-// Defaults:
-mapper.configure({
-  delay_ms: 3000,
-  maxConnections: 16,
-  cachePath: "./.cache"
+mapper.map(url, since, options).then((sitemapstream) => {
+  const file = fs.createWriteStream(`./intercept.ndjson`)
+  sitemapstream.pipe(file)
 })
 ```
 
-### Don't forget to add your cache path to .gitignore! Default path is `./.cache`
+### Don't forget to add your cache path to .gitignore! Default path is `./.hittp`
