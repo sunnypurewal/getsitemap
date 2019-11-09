@@ -16,7 +16,29 @@ class SiteMapper {
     this.countmap = new Map()
     this.outercount = 0
     this.timeout = null
+    this.logLevel = null
   }
+
+  setLogLevel(level) {
+    http.setLogLevel(level)
+    if (level === "info") {
+      this.info = console.log
+      this.debug = console.log
+      this.error = console.error
+    } else if (level === "debug") {
+      this.info = () => {}
+      this.debug = console.log
+      this.error = console.error
+    } else if (level === "error") {
+      this.info = () => {}
+      this.debug = () => {}
+      this.error = console.error
+    } else {
+      this.info = () => {}
+      this.debug = () => {}
+      this.error = () => {}
+    }
+  }  
 
   cancel() {
     for (let host of this.hosts) {

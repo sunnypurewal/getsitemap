@@ -7,9 +7,9 @@ domains = JSON.parse(domains)
 
 let random = Math.floor(Math.random() * domains.length)
 let domain = domains[random]
-domain = 'nationalpost.com'
+// domain = 'nationalpost.com'
 const mapper = new SiteMapper(domain)
-console.log(mapper.domain)
+mapper.setLogLevel("info")
 const sitemapstream = mapper.map("2019-10-23")
 const file = createWriteStream("./.playground/streamtest.txt")
 sitemapstream.pipe(file)
