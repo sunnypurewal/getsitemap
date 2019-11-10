@@ -68,7 +68,7 @@ class SiteMapper {
           sitemapurls.push(`${this.domain.href}/sitemap_index.xml`)
         }
         sitemapurls = [...(new Set(sitemapurls))]
-        console.log(sitemapurls)
+        // console.log(sitemapurls)
         this.outercount = sitemapurls.length
         for (const sitemapurl of sitemapurls) {
           // const sitemapstream = await this.get(sitemapurl, date)
@@ -83,7 +83,7 @@ class SiteMapper {
                   // if (outstream && !outstream.ended) outstream.end()
                 // }, 10000)
               // }
-              console.log("Outer feeder to sitemapstream ended", this.outercount)
+              // console.log("Outer feeder to sitemapstream ended", this.outercount)
             })
             sitemapstream.on("error", () => {
               this.outercount -= 1
@@ -93,7 +93,7 @@ class SiteMapper {
               //     if (outstream && !outstream.ended) outstream.end()
               //   }, 10000)
               // }
-              console.log("Outer feeder to sitemapstream errored", this.outercount)
+              // console.log("Outer feeder to sitemapstream errored", this.outercount)
             })
             sitemapstream.pipe(outstream, {end: false})
             // console.log(sitemapstream)
@@ -145,7 +145,7 @@ class SiteMapper {
               // if (outstream && !outstream.ended) outstream.end()
             // }, 5000)
           }
-          console.log("Inner feeder to sitemapstream ended", innercount)
+          // console.log("Inner feeder to sitemapstream ended", innercount)
         })
       }).catch((err) => {
         let innercount = this.countmap.get(parent || url) || 0
@@ -157,7 +157,7 @@ class SiteMapper {
             // if (outstream && !outstream.ended) outstream.end()
           // }, 5000)
         }
-        console.error("Inner feeder to sitemapstream errored", innercount)
+        // console.error("Inner feeder to sitemapstream errored", innercount)
         // console.error(err)
         reject(err)
       })
