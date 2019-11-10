@@ -67,6 +67,9 @@ class SiteMapper {
           sitemapurls.push(`${this.domain.href}/sitemap.xml`)
           sitemapurls.push(`${this.domain.href}/sitemap_index.xml`)
         }
+        sitemapurls = [...(new Set(sitemapurls))]
+        console.log(sitemapurls)
+        this.outercount = sitemapurls.length
         for (const sitemapurl of sitemapurls) {
           // const sitemapstream = await this.get(sitemapurl, date)
           // sitemapstream.pipe(outstream, {end: false})
@@ -74,21 +77,23 @@ class SiteMapper {
           this.get(sitemapurl, date, options).then((sitemapstream) =>  {
             sitemapstream.on("end", () => {
               this.outercount -= 1
-              if (this.outercount === 0 && !this.timeout) {
-                this.timeout = setTimeout(() => {
-                  if (outstream && !outstream.ended) outstream.end()
-                }, 10000)
-              }
-              // console.log("Outer feeder to sitemapstream ended", this.outercount)
+              if (this.outercount === 0) outstream.end()
+              // if (this.outercount === 0 && !this.timeout) {
+                // this.timeout = setTimeout(() => {
+                  // if (outstream && !outstream.ended) outstream.end()
+                // }, 10000)
+              // }
+              console.log("Outer feeder to sitemapstream ended", this.outercount)
             })
             sitemapstream.on("error", () => {
               this.outercount -= 1
-              if (this.outercount === 0 && !this.timeout) {
-                this.timeout = setTimeout(() => {
-                  if (outstream && !outstream.ended) outstream.end()
-                }, 10000)
-              }
-              // console.log("Outer feeder to sitemapstream errored", this.outercount)
+              if (this.outercount === 0) outstream.end()
+              // if (this.outercount === 0 && !this.timeout) {
+              //   this.timeout = setTimeout(() => {
+              //     if (outstream && !outstream.ended) outstream.end()
+              //   }, 10000)
+              // }
+              console.log("Outer feeder to sitemapstream errored", this.outercount)
             })
             sitemapstream.pipe(outstream, {end: false})
             // console.log(sitemapstream)
@@ -103,7 +108,6 @@ class SiteMapper {
 
   async get(url, since, options) {
     return new Promise((resolve, reject) => {
-      this.outercount += 1
       this._getRecursive(url, since, null, null, options).then((sitemapstream) => {
         resolve(sitemapstream)
       }).catch((err) => {
@@ -117,16 +121,16 @@ class SiteMapper {
     innercount += 1
     this.countmap.set(parent || url, innercount)
     return new Promise((resolve, reject) => {
+      if (!outstream) {
+        outstream = new stream.PassThrough()
+        resolve(outstream)
+      }
       if (this.timeout) {
         // console.log("Resetting timeout", this.innercount)
         clearTimeout(this.timeout)
         this.timeout = null
       }
       this._get(url, since, options).then((urlstream) => {
-        if (!outstream) {
-          outstream = new stream.PassThrough()
-          resolve(outstream)
-        }
         urlstream.on("sitemap", (sitemapurl) => {
           process.nextTick(()=>this._getRecursive(sitemapurl, since, outstream, parent || url, options).catch((err) => {}))
         })
@@ -136,22 +140,24 @@ class SiteMapper {
           innercount -= 1
           this.countmap.set(parent || url, innercount)
           if (innercount === 0) {
-            this.timeout = setTimeout(() => {
-              if (outstream && !outstream.ended) outstream.end()
-            }, 5000)
+            outstream.end()
+            // this.timeout = setTimeout(() => {
+              // if (outstream && !outstream.ended) outstream.end()
+            // }, 5000)
           }
-          // console.log("Inner feeder to sitemapstream ended", innercount)
+          console.log("Inner feeder to sitemapstream ended", innercount)
         })
       }).catch((err) => {
         let innercount = this.countmap.get(parent || url) || 0
         innercount -= 1
         this.countmap.set(parent || url, innercount)
         if (innercount === 0) {
-          this.timeout = setTimeout(() => {
-            if (outstream && !outstream.ended) outstream.end()
-          }, 5000)
+          outstream.end()
+          // this.timeout = setTimeout(() => {
+            // if (outstream && !outstream.ended) outstream.end()
+          // }, 5000)
         }
-        // console.error("Inner feeder to sitemapstream errored", innercount)
+        console.error("Inner feeder to sitemapstream errored", innercount)
         // console.error(err)
         reject(err)
       })
