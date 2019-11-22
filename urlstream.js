@@ -1,9 +1,9 @@
 'use strict'
 
 const stream = require("stream")
-const os = require("os")
 const urldecode = require("./urldecode")
 const url2date = require("./url2date")
+const str2url = require("hittp").str2url
 
 class URLStream extends stream.Transform {
 
@@ -17,6 +17,8 @@ class URLStream extends stream.Transform {
     this.close = null
     this.lastChunk = null
     this.parentURL = parentURL
+    this.onlyURLs = options.onlyURLs || false
+    this.urlCount = 0
   }
 
   _transform(c, enc, cb) {
@@ -62,9 +64,18 @@ class URLStream extends stream.Transform {
           lastmod = lastmod.slice(lastmod.indexOf(">")+1, lastmod.indexOf("</"))
         }
         const date = url2date(loc) || Date.parse(lastmod)
+        // console.log(lastmod, loc)
         if (date && !isNaN(date) && date >= this.since) {
           if (this.mode === 0) {
-            this.push(`${loc}||${(new Date(date)).toISOString()}||${this.parentURL}\n`)
+            this.urlCount += 1
+            if (this.readableObjectMode) {
+              let url = str2url(loc)
+              this.push(url)
+            } else if (this.onlyURLS) {
+              this.push(loc)
+            } else {
+              this.push(`${loc}||${(new Date(date)).toISOString()}||${this.parentURL}\n`)
+            }
           } else {
             this.emit("sitemap", loc)
           }
