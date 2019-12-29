@@ -1,7 +1,49 @@
 {
-  "name": "getsitemap",
-  "version": "0.10.0",
+  "_from": "getsitemap",
+  "_id": "getsitemap@0.10.0",
+  "_inBundle": false,
+  "_integrity": "sha512-xFk1qFsZQqSvd7OjAx3xhjY7aLxMFfdvcuHf4iYBI3vn3qloH0pHnB8QySCoOySUE8xAfHcJaCw0WAhBotnmYQ==",
+  "_location": "/getsitemap",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "getsitemap",
+    "name": "getsitemap",
+    "escapedName": "getsitemap",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/getsitemap/-/getsitemap-0.10.0.tgz",
+  "_shasum": "b8cabea492d428a9517aff6316307fcd9800d231",
+  "_spec": "getsitemap",
+  "_where": "/Users/sunny/Documents/code/houseprices",
+  "author": {
+    "name": "Sunny Purewal",
+    "email": "sunnypurewal@gmail.com",
+    "url": "http://sunnypurewal.me"
+  },
+  "bugs": {
+    "url": "https://github.com/sunnypurewal/getsitemap/issues",
+    "email": "sunnypurewal@gmail.com"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "hittp": "^0.7.1",
+    "query-string": "^6.8.3"
+  },
+  "deprecated": false,
   "description": "Node.js module that recursively crawls a website's sitemap and returns a stream of URLs",
+  "devDependencies": {
+    "@types/jest": "^24.0.22",
+    "jest": "^24.9.0"
+  },
+  "homepage": "https://github.com/sunnypurewal/getsitemap",
   "keywords": [
     "sitemap",
     "crawl",
@@ -9,27 +51,15 @@
     "robots",
     "webcrawl"
   ],
-  "homepage": "https://github.com/sunnypurewal/getsitemap",
-  "bugs": {
-    "url": "https://github.com/sunnypurewal/getsitemap/issues",
-    "email": "sunnypurewal@gmail.com"
-  },
+  "license": "ISC",
   "main": "index.js",
+  "name": "getsitemap",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunnypurewal/getsitemap.git"
+  },
   "scripts": {
     "test": "jest"
   },
-  "author": "Sunny Purewal <sunnypurewal@gmail.com> (http://sunnypurewal.me)",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "github:sunnypurewal/getsitemap.git"
-  },
-  "dependencies": {
-    "hittp": "^0.7.1",
-    "query-string": "^6.8.3"
-  },
-  "devDependencies": {
-    "@types/jest": "^24.0.22",
-    "jest": "^24.9.0"
-  }
+  "version": "0.10.0"
 }

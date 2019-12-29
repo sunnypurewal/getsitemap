@@ -18,16 +18,14 @@ const getsitemap = require("getsitemap")
 const url = "theintercept.com"
 const since = Date.parse("2019-10-01")
 
-const mapper = new getsitemap.SiteMapper()
-mapper.map(url, since).then((sitemapstream) => {
-  const file = fs.createWriteStream(`./intercept.ndjson`)
-  sitemapstream.pipe(file)
-})
+const mapper = new getsitemap.SiteMapper(url)
+const sitemapstream = mapper.map(since)
+const file = fs.createWriteStream(`./intercept.ndjson`)
+sitemapstream.pipe(file)
 /* OR */
-mapper.map(url, since).then((sitemapstream) => {
-  sitemapstream.on("data", (obj) => {
-    // obj.url, obj.lastmod
-  })
+const sitemapstream = mapper.map(since)
+sitemapstream.on("data", (obj) => {
+  // obj.url, obj.lastmod
 })
 ```
 
